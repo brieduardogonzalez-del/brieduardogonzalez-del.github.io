@@ -212,6 +212,117 @@
 
     canvas{ width:100%; height: 160px; display:block; }
 
+    /* --- HERO (nuevo) --- */
+    .hero{
+      margin: 12px 0 18px;
+      padding: 26px 22px;
+      border-radius: 20px;
+      border:1px solid var(--border);
+      background:
+        radial-gradient(700px 320px at 18% 18%, rgba(255,70,85,.18), transparent 60%),
+        radial-gradient(700px 320px at 85% 62%, rgba(110,168,255,.18), transparent 60%),
+        rgba(11,15,26,.92);
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero:before{
+      content:"";
+      position:absolute;
+      inset:-2px;
+      background:
+        linear-gradient(120deg, rgba(255,70,85,.18), transparent 40%),
+        linear-gradient(240deg, rgba(110,168,255,.14), transparent 45%);
+      opacity:.45;
+      pointer-events:none;
+    }
+    .hero-inner{
+      position:relative;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:18px;
+      flex-wrap:wrap;
+    }
+    .hero h2{
+      margin:0;
+      font-size: 30px;
+      font-weight: 900;
+      letter-spacing: .3px;
+    }
+    .hero p{
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 15px;
+      max-width: 720px;
+      line-height: 1.55;
+    }
+    .hero-cta{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+      margin-top: 14px;
+    }
+    .ctaBtn{
+      cursor:pointer;
+      border-radius: 14px;
+      padding: 12px 16px;
+      font-weight: 900;
+      border: 1px solid rgba(255,70,85,.60);
+      background: linear-gradient(180deg, rgba(255,70,85,.30), rgba(255,70,85,.12));
+      color: var(--text);
+      transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+      font-size: 14px;
+    }
+    .ctaBtn:hover{
+      transform: translateY(-2px);
+      box-shadow: 0 10px 28px rgba(255,70,85,.22);
+      background: linear-gradient(180deg, rgba(255,70,85,.40), rgba(255,70,85,.16));
+    }
+    .ghostBtn{
+      cursor:pointer;
+      border-radius: 14px;
+      padding: 12px 16px;
+      font-weight: 900;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.03);
+      color: var(--text);
+      transition: transform .18s ease, box-shadow .18s ease;
+      font-size: 14px;
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+    }
+    .ghostBtn:hover{
+      transform: translateY(-2px);
+      box-shadow: 0 10px 26px rgba(0,0,0,.35);
+    }
+    .heroRight{
+      min-width: 260px;
+      border-radius: 16px;
+      border: 1px solid rgba(27,36,64,.8);
+      background: rgba(7,9,15,.55);
+      padding: 12px 12px;
+    }
+    .heroRight .miniTitle{
+      color: rgba(154,164,199,.9);
+      font-weight: 900;
+      font-size: 12px;
+    }
+    .heroRight .miniValue{
+      margin-top: 6px;
+      font-size: 14px;
+      font-weight: 900;
+    }
+    .heroRight .miniHint{
+      margin-top: 6px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
     @media (max-width: 980px){
       .grid{ grid-template-columns: 1fr; }
       .kpis{ grid-template-columns: 1fr; }
@@ -220,6 +331,7 @@
       .gridInputs.five{ grid-template-columns: repeat(2, 1fr); }
       .insightsGrid{ grid-template-columns: 1fr; }
       .badge{ display:none; }
+      .heroRight{ width:100%; }
     }
   </style>
 </head>
@@ -232,6 +344,37 @@
         <div class="subtitle">100 bots (5 tiempos) · Hard (15 reps) · Deathmatch (5 DMs). Semana/Mes + PB + racha + gráfica.</div>
       </div>
       <div class="badge">🔻 Dark Mode · VLR Style</div>
+    </div>
+
+    <!-- HERO (nuevo) -->
+    <div class="hero">
+      <div class="hero-inner">
+        <div style="flex:1; min-width: 280px;">
+          <h2>Entrena como nAts. Mide como pro.</h2>
+          <p>
+            Este tracker convierte tu rutina en progreso medible: bots, hard reps y deathmatch con análisis semanal.
+            Rompe tu PB, sube tu consistencia y deja de entrenar “a ciegas”.
+          </p>
+
+          <div class="hero-cta">
+            <button class="ctaBtn" onclick="document.getElementById('addBtn').scrollIntoView({behavior:'smooth'})">
+              🚀 Empezar a registrar
+            </button>
+            <a class="ghostBtn" href="/privacy.html">
+              🛡️ Privacy Policy
+            </a>
+          </div>
+        </div>
+
+        <div class="heroRight">
+          <div class="miniTitle">💡 Tip rápido</div>
+          <div class="miniValue">El objetivo es consistencia, no “un día perfecto”.</div>
+          <div class="miniHint">
+            Mira la mejora vs semana pasada y la racha. Si estás entrenando 5+ días seguidos,
+            tu aim se vuelve automático.
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="toast" id="toastPB">🏆 <b>NEW PB</b> — </div>
