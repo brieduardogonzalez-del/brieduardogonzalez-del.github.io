@@ -22,17 +22,57 @@
       --blue:#6ea8ff;
       --shadow: 0 10px 30px rgba(0,0,0,.45);
       --radius: 16px;
+
+      --glowRed: rgba(255,70,85,.14);
+      --glowBlue: rgba(110,168,255,.14);
     }
     *{ box-sizing:border-box; }
     body{
       margin:0;
       font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial;
-      background: radial-gradient(1200px 800px at 20% 10%, rgba(31,59,122,.25), transparent 60%),
-                  radial-gradient(900px 700px at 80% 20%, rgba(255,70,85,.18), transparent 55%),
-                  var(--bg);
+      background:
+        radial-gradient(1200px 800px at 20% 10%, rgba(31,59,122,.25), transparent 60%),
+        radial-gradient(900px 700px at 80% 20%, rgba(255,70,85,.18), transparent 55%),
+        var(--bg);
       color: var(--text);
+      overflow-x:hidden;
     }
-    .wrap{ max-width: 1200px; margin: 28px auto; padding: 0 18px 36px; }
+
+    /* Motion (suave, pro, no mareo) */
+    .bgMotion{
+      position: fixed;
+      inset: 0;
+      pointer-events:none;
+      z-index: 0;
+      opacity: .75;
+      background:
+        radial-gradient(700px 380px at 10% 10%, rgba(255,70,85,.10), transparent 60%),
+        radial-gradient(900px 520px at 85% 22%, rgba(110,168,255,.10), transparent 60%),
+        radial-gradient(700px 520px at 55% 92%, rgba(255,70,85,.08), transparent 60%);
+      filter: blur(0px);
+      animation: floaty 14s ease-in-out infinite alternate;
+    }
+    @keyframes floaty{
+      0%{ transform: translate3d(0,0,0) scale(1); }
+      100%{ transform: translate3d(-10px, 8px, 0) scale(1.02); }
+    }
+    .scanlines{
+      position: fixed;
+      inset: 0;
+      pointer-events:none;
+      z-index: 0;
+      opacity: .08;
+      background: repeating-linear-gradient(
+        to bottom,
+        rgba(255,255,255,0.02),
+        rgba(255,255,255,0.02) 1px,
+        rgba(0,0,0,0) 4px,
+        rgba(0,0,0,0) 8px
+      );
+      mix-blend-mode: overlay;
+    }
+
+    .wrap{ position:relative; z-index: 1; max-width: 1200px; margin: 28px auto; padding: 0 18px 36px; }
     .topbar{ display:flex; align-items:flex-end; justify-content:space-between; gap:16px; margin-bottom: 12px; }
     h1{ margin:0; font-size: 28px; letter-spacing: .2px; }
     .subtitle{ margin-top:6px; color: var(--muted); font-size: 14px; }
@@ -59,13 +99,17 @@
     .toast b{ color: var(--good); }
 
     .grid{ display:grid; grid-template-columns: 1fr 1.35fr; gap: 16px; align-items:start; }
+
     .card{
       background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.00));
       border:1px solid var(--border);
       border-radius: var(--radius);
       padding: 16px;
       box-shadow: var(--shadow);
+      backdrop-filter: blur(2px);
+      transition: transform .18s ease, box-shadow .18s ease;
     }
+    .card:hover{ transform: translateY(-1px); box-shadow: 0 14px 34px rgba(0,0,0,.52); }
     .card h2{ margin: 0 0 10px; font-size: 18px; letter-spacing: .2px; }
 
     label{ display:block; margin-top: 10px; color: var(--muted); font-size: 13px; font-weight: 800; }
@@ -77,6 +121,11 @@
       color: var(--text);
       outline:none;
       font-size: 15px;
+      transition: border-color .16s ease, box-shadow .16s ease;
+    }
+    input:focus, select:focus{
+      border-color: rgba(110,168,255,.55);
+      box-shadow: 0 0 0 4px rgba(110,168,255,.10);
     }
     input::placeholder{ color: rgba(154,164,199,.6); }
 
@@ -100,7 +149,10 @@
       background: rgba(255,255,255,.03);
       color: var(--text);
       font-size: 14px;
+      transition: transform .16s ease, box-shadow .16s ease, background .16s ease;
     }
+    button:hover{ transform: translateY(-1px); box-shadow: 0 12px 26px rgba(0,0,0,.40); }
+    button:active{ transform: translateY(0px); box-shadow:none; }
     button.primary{
       border-color: rgba(255,70,85,.55);
       background: linear-gradient(180deg, rgba(255,70,85,.25), rgba(255,70,85,.10));
@@ -212,7 +264,7 @@
 
     canvas{ width:100%; height: 160px; display:block; }
 
-    /* --- HERO (nuevo) --- */
+    /* --- HERO --- */
     .hero{
       margin: 12px 0 18px;
       padding: 26px 22px;
@@ -299,29 +351,80 @@
       transform: translateY(-2px);
       box-shadow: 0 10px 26px rgba(0,0,0,.35);
     }
+
     .heroRight{
-      min-width: 260px;
+      min-width: 280px;
       border-radius: 16px;
       border: 1px solid rgba(27,36,64,.8);
       background: rgba(7,9,15,.55);
       padding: 12px 12px;
     }
-    .heroRight .miniTitle{
-      color: rgba(154,164,199,.9);
+
+    .chipRow{ display:flex; flex-wrap:wrap; gap:8px; margin-top: 10px; }
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(27,36,64,.75);
+      background: rgba(11,15,26,.72);
+      color: var(--text);
       font-weight: 900;
       font-size: 12px;
+      cursor:pointer;
+      user-select:none;
+      transition: transform .14s ease, box-shadow .14s ease, border-color .14s ease;
     }
-    .heroRight .miniValue{
-      margin-top: 6px;
-      font-size: 14px;
+    .chip:hover{ transform: translateY(-1px); box-shadow: 0 10px 20px rgba(0,0,0,.35); border-color: rgba(110,168,255,.35); }
+
+    /* Banner modo share */
+    .shareBanner{
+      display:none;
+      margin: 0 0 14px;
+      border: 1px solid rgba(110,168,255,.35);
+      background: rgba(110,168,255,.08);
+      border-radius: 14px;
+      padding: 12px 14px;
+      box-shadow: var(--shadow);
       font-weight: 900;
     }
-    .heroRight .miniHint{
-      margin-top: 6px;
-      font-size: 12px;
-      color: var(--muted);
-      line-height: 1.4;
+    .shareBanner b{ color: var(--blue); }
+
+    /* Leaderboard */
+    .lbHeader{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
     }
+    .lbHeader .hint{ color: var(--muted); font-size: 12px; margin-top:6px; }
+    .rankTag{
+      display:inline-flex; align-items:center; gap:8px;
+      border: 1px solid rgba(255,70,85,.35);
+      background: rgba(255,70,85,.08);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-weight: 900;
+      font-size: 12px;
+      white-space:nowrap;
+    }
+    .lbTable td, .lbTable th{ padding: 10px 10px; }
+
+    /* “Slot” para imagen/arte (puedes reemplazar luego por img real) */
+    .artSlot{
+      margin-top: 10px;
+      border-radius: 14px;
+      border: 1px dashed rgba(154,164,199,.35);
+      background:
+        radial-gradient(500px 140px at 20% 30%, rgba(255,70,85,.10), transparent 60%),
+        radial-gradient(500px 160px at 78% 70%, rgba(110,168,255,.10), transparent 60%),
+        rgba(11,15,26,.55);
+      padding: 14px;
+    }
+    .artSlot .title{ font-weight: 900; font-size: 12px; color: rgba(154,164,199,.95); }
+    .artSlot .desc{ margin-top:6px; color: var(--muted); font-size: 12px; line-height:1.4; }
 
     @media (max-width: 980px){
       .grid{ grid-template-columns: 1fr; }
@@ -337,6 +440,9 @@
 </head>
 
 <body>
+  <div class="bgMotion"></div>
+  <div class="scanlines"></div>
+
   <div class="wrap">
     <div class="topbar">
       <div>
@@ -346,7 +452,10 @@
       <div class="badge">🔻 Dark Mode · VLR Style</div>
     </div>
 
-    <!-- HERO (nuevo) -->
+    <!-- Banner Share Mode -->
+    <div class="shareBanner" id="shareBanner">🔗 <b>Modo compartir</b> — Solo lectura. Este link muestra un snapshot del progreso.</div>
+
+    <!-- HERO -->
     <div class="hero">
       <div class="hero-inner">
         <div style="flex:1; min-width: 280px;">
@@ -357,12 +466,21 @@
           </p>
 
           <div class="hero-cta">
-            <button class="ctaBtn" onclick="document.getElementById('addBtn').scrollIntoView({behavior:'smooth'})">
+            <button class="ctaBtn" id="goRegisterBtn">
               🚀 Empezar a registrar
+            </button>
+            <button class="ghostBtn" id="makeShareBtn" type="button">
+              🔗 Crear link para compartir
             </button>
             <a class="ghostBtn" href="/privacy.html">
               🛡️ Privacy Policy
             </a>
+          </div>
+
+          <div class="chipRow">
+            <div class="chip" id="chipToSummary">📊 Ir a Resumen</div>
+            <div class="chip" id="chipToLeaderboard">🏆 Ir a Leaderboard</div>
+            <div class="chip" id="chipToHistory">🗂️ Ir a Historial</div>
           </div>
         </div>
 
@@ -373,6 +491,14 @@
             Mira la mejora vs semana pasada y la racha. Si estás entrenando 5+ días seguidos,
             tu aim se vuelve automático.
           </div>
+
+          <div class="artSlot">
+            <div class="title">🎨 Slot de arte (próximo)</div>
+            <div class="desc">
+              Aquí vamos a meter imagen/ilustración estilo Valorant + una animación leve.
+              (Cuando tengas una imagen, la ponemos sin que pese.)
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -381,11 +507,16 @@
 
     <div class="grid">
       <!-- FORM -->
-      <div class="card">
+      <div class="card" id="registerCard">
         <h2>Nuevo registro</h2>
 
         <label>Fecha</label>
         <input id="date" type="date" />
+
+        <div class="divider"></div>
+
+        <label>Nickname (para leaderboard)</label>
+        <input id="player" type="text" placeholder="Ej: Ilmugil / Sol / tu tag" />
 
         <div class="divider"></div>
 
@@ -453,11 +584,16 @@
         <div class="muted" style="margin-top:12px;">
           Score del día = <b>(HardTotal) + (K/D total × 10) − (BotsAvg/10)</b>.
         </div>
+
+        <div class="muted" style="margin-top:8px;">
+          🔒 Nota: el login + leaderboard global viene en fase 2 (Supabase). Hoy esto funciona local + share link.
+        </div>
       </div>
 
-      <!-- DASHBOARD -->
+      <!-- RIGHT COLUMN -->
       <div>
-        <div class="card">
+        <!-- SUMMARY -->
+        <div class="card" id="summaryCard">
           <div class="row" style="align-items:flex-end;">
             <div style="flex:1; min-width:240px;">
               <h2 style="margin:0;">Resumen</h2>
@@ -553,7 +689,45 @@
           <div class="weekProgress" id="weekProgress"></div>
         </div>
 
-        <div class="card" style="margin-top:16px;">
+        <!-- LEADERBOARD -->
+        <div class="card" id="leaderboardCard" style="margin-top:16px;">
+          <div class="lbHeader">
+            <div style="flex:1; min-width:240px;">
+              <h2 style="margin:0;">🏆 Leaderboard (local)</h2>
+              <div class="hint">Top por <b>mejor score</b> del período. (Global real llega con Supabase).</div>
+            </div>
+            <div style="min-width:220px;">
+              <label style="margin-top:0;">Leaderboard por</label>
+              <select id="lbMode">
+                <option value="period">Período seleccionado</option>
+                <option value="all">All-time</option>
+              </select>
+            </div>
+            <div class="rankTag" id="yourRank">Tu rank: —</div>
+          </div>
+
+          <table class="lbTable">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Jugador</th>
+                <th>Mejor score</th>
+                <th>Fecha</th>
+                <th>100 bots best</th>
+                <th>Hard total</th>
+                <th>DM K/D</th>
+              </tr>
+            </thead>
+            <tbody id="lbTbody"></tbody>
+          </table>
+
+          <div class="muted" style="margin-top:10px;">
+            Tip: pon tu <b>nickname</b> al guardar para que aparezcas en la tabla.
+          </div>
+        </div>
+
+        <!-- HISTORY -->
+        <div class="card" id="historyCard" style="margin-top:16px;">
           <h2 style="margin:0;">Historial</h2>
           <div class="muted" id="countInfo" style="margin-top:6px;">0 registro(s)</div>
 
@@ -562,6 +736,7 @@
               <tr>
                 <th>Fecha</th>
                 <th>Día</th>
+                <th>Jugador</th>
                 <th>100 bots avg/best</th>
                 <th>Hard total (avg/rep)</th>
                 <th>DM totals (K/D)</th>
@@ -578,20 +753,27 @@
   </div>
 
 <script>
-  const KEY = "valorant_routine_tracker_v5_nats";
+  const KEY = "valorant_routine_tracker_v6_nats";
+  const SHARE_PARAM = "share";
 
   const el = (id) => document.getElementById(id);
 
   const DOW_SHORT = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
   const DOW_MON_FIRST = ["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"];
 
+  let READ_ONLY = false;
+  let SHARE_ITEMS = null; // cuando viene desde link
+
   function load(){
+    if (SHARE_ITEMS) return SHARE_ITEMS;
     try { return JSON.parse(localStorage.getItem(KEY)) ?? []; }
     catch { return []; }
   }
   function save(items){
+    if (READ_ONLY) return;
     localStorage.setItem(KEY, JSON.stringify(items));
   }
+
   function safeNum(v){
     const n = Number(v);
     return Number.isFinite(n) ? n : 0;
@@ -786,7 +968,6 @@
 
   // ------- Semana: datos para gráfica + comparación
   function weeklyBotAvgSeries(allItems){
-    // Map: weekKey -> {sum,count}
     const map = new Map();
     for (const it of allItems){
       if (!it.date) continue;
@@ -799,8 +980,7 @@
       map.set(wk, cur);
     }
     const keys = Array.from(map.keys()).sort(); // asc
-    const series = keys.map(k => ({ week:k, avg: map.get(k).sum / map.get(k).count }));
-    return series;
+    return keys.map(k => ({ week:k, avg: map.get(k).sum / map.get(k).count }));
   }
 
   function drawWeekChart(series){
@@ -810,7 +990,6 @@
 
     ctx.clearRect(0,0,W,H);
 
-    // background subtle
     ctx.fillStyle = "rgba(255,255,255,0.02)";
     ctx.fillRect(0,0,W,H);
 
@@ -834,7 +1013,6 @@
     const xAt = (i) => padL + (plotW * (lastN.length === 1 ? 0 : (i/(lastN.length-1))));
     const yAt = (v) => padT + (plotH * (1 - ((v - minY)/(maxY - minY))));
 
-    // axes
     ctx.strokeStyle = "rgba(27,36,64,0.9)";
     ctx.lineWidth = 1;
     ctx.beginPath();
@@ -843,13 +1021,11 @@
     ctx.lineTo(padL + plotW, padT + plotH);
     ctx.stroke();
 
-    // y labels (min/max)
     ctx.fillStyle = "rgba(154,164,199,0.85)";
     ctx.font = "bold 12px Inter, Arial";
     ctx.fillText(fmt(maxY,1), 8, padT + 12);
     ctx.fillText(fmt(minY,1), 8, padT + plotH);
 
-    // line
     ctx.strokeStyle = "rgba(110,168,255,0.95)";
     ctx.lineWidth = 2;
     ctx.beginPath();
@@ -860,7 +1036,6 @@
     });
     ctx.stroke();
 
-    // points
     ctx.fillStyle = "rgba(255,70,85,0.95)";
     lastN.forEach((p,i)=>{
       const x = xAt(i), y = yAt(p.avg);
@@ -869,13 +1044,12 @@
       ctx.fill();
     });
 
-    // x labels (weeks)
     ctx.fillStyle = "rgba(154,164,199,0.75)";
     ctx.font = "bold 11px Inter, Arial";
     lastN.forEach((p,i)=>{
-      const label = p.week.slice(5); // "W02"
+      const label = p.week.slice(5);
       const x = xAt(i);
-      if (lastN.length > 5 && i % 2 === 1) return; // reduce clutter
+      if (lastN.length > 5 && i % 2 === 1) return;
       ctx.fillText(label, x-12, padT + plotH + 22);
     });
   }
@@ -889,9 +1063,8 @@
     const cur = series[series.length-1].avg;
     const prev = series[series.length-2].avg;
 
-    // lower is better
     const delta = prev === 0 ? 0 : ((prev - cur) / prev) * 100;
-    const arrow = delta > 0 ? "⬇" : (delta < 0 ? "⬆" : "→"); // ⬇ mejora (baja el tiempo)
+    const arrow = delta > 0 ? "⬇" : (delta < 0 ? "⬆" : "→");
     const cls = delta > 0 ? "deltaUp" : (delta < 0 ? "deltaDown" : "deltaFlat");
     const sign = delta > 0 ? "+" : "";
 
@@ -900,19 +1073,187 @@
 
   function renderStreak(allItems){
     const {streak, last} = computeStreak(allItems);
-    const txt = streak ? `${streak} día(s) seguidos` : "—";
-    el("streakText").textContent = txt;
+    el("streakText").textContent = streak ? `${streak} día(s) seguidos` : "—";
 
     const ok = streak >= 5;
     el("streakHint").textContent = ok
       ? `Nice. Estás en modo disciplina (último: ${last}).`
       : (last ? `Sigue: te faltan ${5 - streak} para llegar a 5 (último: ${last}).` : "Meta: 5+ días seguidos.");
 
-    // bar: cap at 10 days (visual)
     const pct = Math.min(100, (streak / 10) * 100);
     el("streakBar").style.width = pct + "%";
   }
 
+  // -------- Leaderboard (local): mejor score por jugador
+  function buildLeaderboard(items){
+    const byPlayer = new Map();
+    for (const it of items){
+      const name = (it.player || "Anon").trim() || "Anon";
+      const s = perfScore(it);
+      const prev = byPlayer.get(name);
+      if (!prev || s > prev.score){
+        byPlayer.set(name, {
+          player: name,
+          score: s,
+          date: it.date || "",
+          botBest: botBest(it),
+          hardTotal: hardTotal(it),
+          dmKD: dmKDTotal(it)
+        });
+      }
+    }
+    return Array.from(byPlayer.values()).sort((a,b)=> b.score - a.score);
+  }
+
+  function renderLeaderboard(allItems, filteredItems){
+    const mode = el("lbMode").value; // period or all
+    const base = (mode === "all") ? allItems : filteredItems;
+
+    const rows = buildLeaderboard(base);
+    const tbody = el("lbTbody");
+    tbody.innerHTML = "";
+
+    const top = rows.slice(0, 10);
+
+    top.forEach((r, idx)=>{
+      const tr = document.createElement("tr");
+      const medal = idx === 0 ? "🥇" : (idx === 1 ? "🥈" : (idx === 2 ? "🥉" : String(idx+1)));
+      tr.innerHTML = `
+        <td style="font-weight:900;">${medal}</td>
+        <td style="font-weight:900;">${escapeHtml(r.player)}</td>
+        <td style="font-weight:900;">${fmt(r.score,1)}</td>
+        <td>${r.date}</td>
+        <td>${r.botBest ? fmt(r.botBest,1)+"s" : "—"}</td>
+        <td>${fmt(r.hardTotal,0)}</td>
+        <td>${fmt(r.dmKD,2)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    if (!top.length){
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td colspan="7" style="color:rgba(154,164,199,.8); font-weight:900;">Sin datos para leaderboard todavía.</td>`;
+      tbody.appendChild(tr);
+    }
+
+    // “Tu rank” usa el nickname actual si existe, o el último guardado
+    const myName = (el("player")?.value || getLastPlayerName(allItems) || "").trim();
+    if (!myName){
+      el("yourRank").textContent = "Tu rank: —";
+      return;
+    }
+    const allRows = buildLeaderboard(base);
+    const i = allRows.findIndex(x => x.player.toLowerCase() === myName.toLowerCase());
+    el("yourRank").textContent = i === -1 ? `Tu rank: —` : `Tu rank: #${i+1} (${myName})`;
+  }
+
+  function getLastPlayerName(items){
+    const lastWith = items.slice().reverse().find(x => (x.player||"").trim());
+    return lastWith ? lastWith.player : "";
+  }
+
+  function escapeHtml(s){
+    return String(s||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+  }
+
+  // -------- Share link (snapshot) — URL hash
+  function encodeUTF8ToBase64(str){
+    const utf8 = encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (_,p)=>String.fromCharCode(parseInt(p,16)));
+    return btoa(utf8);
+  }
+  function decodeBase64ToUTF8(b64){
+    const bin = atob(b64);
+    const esc = Array.from(bin).map(c=>"%"+c.charCodeAt(0).toString(16).padStart(2,"0")).join("");
+    return decodeURIComponent(esc);
+  }
+
+  function makeSharePayload(){
+    const items = load();
+    // Snapshot minimal (para no hacer link infinito)
+    // Guardamos máximo 120 registros para que el link no explote
+    const trimmed = items.slice(-120);
+    const payload = {
+      v: 1,
+      createdAt: new Date().toISOString(),
+      items: trimmed
+    };
+    return encodeUTF8ToBase64(JSON.stringify(payload));
+  }
+
+  async function copyToClipboard(text){
+    try{
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      // fallback
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      try{ document.execCommand("copy"); } catch {}
+      document.body.removeChild(ta);
+      return true;
+    }
+  }
+
+  async function createShareLink(){
+    const b64 = makeSharePayload();
+    const url = `${location.origin}${location.pathname}#${SHARE_PARAM}=${b64}`;
+    await copyToClipboard(url);
+    alert("Listo ✅ Link copiado. Pégalo donde quieras (WhatsApp/Discord).");
+  }
+
+  function tryLoadShareFromHash(){
+    const hash = location.hash || "";
+    if (!hash.startsWith("#")) return false;
+    const raw = hash.slice(1);
+    const parts = raw.split("=");
+    if (parts.length < 2) return false;
+    const key = parts[0];
+    if (key !== SHARE_PARAM) return false;
+
+    const b64 = parts.slice(1).join("="); // por si trae '=' dentro
+    try{
+      const json = decodeBase64ToUTF8(b64);
+      const payload = JSON.parse(json);
+      if (!payload || !Array.isArray(payload.items)) return false;
+
+      SHARE_ITEMS = payload.items;
+      READ_ONLY = true;
+
+      el("shareBanner").style.display = "block";
+      // deshabilitar UI de edición
+      lockInputs();
+
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  function lockInputs(){
+    const idsToDisable = [
+      "date","player",
+      "botT1","botT2","botT3","botT4","botT5",
+      "h1","h2","h3","h4","h5","h6","h7","h8","h9","h10","h11","h12","h13","h14","h15",
+      "dm1k","dm1d","dm2k","dm2d","dm3k","dm3d","dm4k","dm4d","dm5k","dm5d",
+      "notes",
+      "addBtn","clearBtn","exportBtn"
+    ];
+    idsToDisable.forEach(id=>{
+      const e = el(id);
+      if (!e) return;
+      e.disabled = true;
+      e.style.opacity = .6;
+      e.style.cursor = "not-allowed";
+    });
+
+    // Botón share todavía sirve (para que alguien re-comparta)
+    const s = el("makeShareBtn");
+    if (s) s.disabled = false;
+  }
+
+  // ------- Render principal
   function render(){
     const mode = el("viewMode").value;
     const period = el("periodSelect").value || (mode === "all" ? "all" : "");
@@ -926,7 +1267,6 @@
     const last = allItems.length ? allItems[allItems.length-1].date : "—";
     el("kpiLast").textContent = `Último: ${last}`;
 
-    // KPIs por período seleccionado
     const botAvgs = items.map(x => botAvg(x)).filter(x => x > 0);
     const botBests = items.map(x => botBest(x)).filter(x => x > 0);
     const hardTotals = items.map(x => hardTotal(x));
@@ -946,13 +1286,15 @@
 
     renderWeekProgress(items);
 
-    // Insights (siempre en base a TODO, porque tiene sentido ver tendencia)
     const series = weeklyBotAvgSeries(allItems);
     drawWeekChart(series);
     renderVsLastWeek(allItems);
     renderStreak(allItems);
 
-    // tabla
+    // Leaderboard
+    renderLeaderboard(allItems, items);
+
+    // tabla historial
     const tbody = el("tbody");
     tbody.innerHTML = "";
     for (const x of items.slice().sort((a,b)=> (b.date||"").localeCompare(a.date||""))){
@@ -970,24 +1312,33 @@
       tr.innerHTML = `
         <td>${x.date || ""}</td>
         <td>${x.date ? dowName(x.date) : ""}</td>
+        <td style="font-weight:900;">${escapeHtml((x.player||"Anon"))}</td>
         <td>${bAvg ? (fmt(bAvg,1) + "s / " + fmt(bBest,1) + "s") : "—"} ${pbTag}</td>
         <td>${fmt(hTot,0)} (${fmt(hAvg,1)})</td>
         <td>${fmt(dmt.k,0)}-${fmt(dmt.d,0)} (${fmt(dmkd,2)})</td>
-        <td>${fmt(score,1)}</td>
-        <td>${(x.notes||"").replaceAll("<","&lt;").replaceAll(">","&gt;")}</td>
-        <td><button data-id="${x.id}">Eliminar</button></td>
+        <td style="font-weight:900;">${fmt(score,1)}</td>
+        <td>${escapeHtml(x.notes||"")}</td>
+        <td>${READ_ONLY ? "" : `<button data-id="${x.id}">Eliminar</button>`}</td>
       `;
-      tr.querySelector("button").addEventListener("click", () => {
-        const updated = load().filter(i => i.id !== x.id);
-        save(updated);
-        renderPeriodSelect();
-        render();
-      });
+
+      if (!READ_ONLY){
+        const btn = tr.querySelector("button");
+        if (btn){
+          btn.addEventListener("click", () => {
+            const updated = load().filter(i => i.id !== x.id);
+            save(updated);
+            renderPeriodSelect();
+            render();
+          });
+        }
+      }
       tbody.appendChild(tr);
     }
   }
 
   function addItem(){
+    if (READ_ONLY) return;
+
     const date = el("date").value || new Date().toISOString().slice(0,10);
 
     const botTimes = [];
@@ -1008,13 +1359,15 @@
     }
 
     const notes = (el("notes").value || "").trim();
+    const player = (el("player").value || "").trim();
 
     const itemsBefore = load();
-    const prevGlobalBest = globalBestBotBest(itemsBefore); // menor es mejor
+    const prevGlobalBest = globalBestBotBest(itemsBefore);
 
     const item = {
       id: crypto.randomUUID(),
       date,
+      player,
       botTimes,
       hardReps,
       dms,
@@ -1022,7 +1375,6 @@
       pbBotBest: false
     };
 
-    // PB check (solo si hay best válido)
     const newBest = botBest(item);
     if (newBest > 0 && (prevGlobalBest === 0 || newBest < prevGlobalBest)){
       item.pbBotBest = true;
@@ -1032,7 +1384,6 @@
     items.push(item);
     save(items);
 
-    // toast PB
     if (item.pbBotBest){
       showPBToast(`100 bots best: ${fmt(newBest,1)}s (antes ${prevGlobalBest ? fmt(prevGlobalBest,1)+"s" : "—"})`);
     } else {
@@ -1050,6 +1401,7 @@
   }
 
   function clearAll(){
+    if (READ_ONLY) return;
     const ok = confirm("¿Seguro que quieres borrar todo? Esto no se puede deshacer.");
     if (!ok) return;
     localStorage.removeItem(KEY);
@@ -1060,7 +1412,7 @@
   function exportCSV(){
     const items = load();
     const header = [
-      "date","dow",
+      "date","dow","player",
       "botT1","botT2","botT3","botT4","botT5","botAvg","botBest","pbBotBest",
       "hardR1","hardR2","hardR3","hardR4","hardR5","hardR6","hardR7","hardR8","hardR9","hardR10","hardR11","hardR12","hardR13","hardR14","hardR15",
       "hardTotal","hardAvgRep","hardBestRep",
@@ -1082,6 +1434,7 @@
       return [
         x.date,
         x.date ? dowName(x.date) : "",
+        (x.player||""),
         bt[0]||0, bt[1]||0, bt[2]||0, bt[3]||0, bt[4]||0,
         bAvg.toFixed(2), bBest.toFixed(2),
         x.pbBotBest ? "1" : "0",
@@ -1111,6 +1464,13 @@
     URL.revokeObjectURL(url);
   }
 
+  // --- navegación smooth
+  function jumpTo(id){
+    const node = document.getElementById(id);
+    if (!node) return;
+    node.scrollIntoView({behavior:"smooth", block:"start"});
+  }
+
   // eventos
   el("addBtn").addEventListener("click", addItem);
   el("clearBtn").addEventListener("click", clearAll);
@@ -1122,8 +1482,26 @@
   });
   el("periodSelect").addEventListener("change", () => render());
 
+  el("lbMode").addEventListener("change", () => render());
+
+  // Hero actions
+  el("goRegisterBtn").addEventListener("click", ()=> jumpTo("registerCard"));
+  el("makeShareBtn").addEventListener("click", createShareLink);
+  el("chipToSummary").addEventListener("click", ()=> jumpTo("summaryCard"));
+  el("chipToLeaderboard").addEventListener("click", ()=> jumpTo("leaderboardCard"));
+  el("chipToHistory").addEventListener("click", ()=> jumpTo("historyCard"));
+
   // init
-  el("date").value = new Date().toISOString().slice(0,10);
+  const loadedShare = tryLoadShareFromHash();
+
+  // si NO es share, fecha default hoy
+  if (!loadedShare){
+    el("date").value = new Date().toISOString().slice(0,10);
+  } else {
+    // En share mode: forzamos vista All para que sea más claro
+    el("viewMode").value = "all";
+  }
+
   renderPeriodSelect();
   render();
 </script>
