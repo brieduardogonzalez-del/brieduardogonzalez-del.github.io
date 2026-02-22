@@ -135,9 +135,7 @@
     }
 
     /* Settings dropdown */
-    .settings{
-      position: relative;
-    }
+    .settings{ position: relative; }
     .gearBtn{
       cursor:pointer;
       border-radius: 999px;
@@ -527,11 +525,9 @@
 </head>
 
 <body>
-  <!-- particles canvas -->
   <canvas id="particles"></canvas>
 
   <div class="app">
-    <!-- Header -->
     <div class="header">
       <div class="header-inner">
         <div class="brand">
@@ -563,7 +559,6 @@
     </div>
 
     <div class="wrap" id="dashboard">
-      <!-- HERO -->
       <div class="hero">
         <div class="hero-inner">
           <div style="flex:1; min-width: 280px;">
@@ -800,6 +795,30 @@
               <tbody id="tbody"></tbody>
             </table>
           </div>
+
+          <!-- ✅ LEADERBOARD (vuelve y mejor) -->
+          <div class="card" style="margin-top:16px;">
+            <h2 style="margin:0;">🏆 Leaderboard</h2>
+            <div class="muted" style="margin-top:6px;">
+              Top días según tu performance score (se actualiza con Semana/Mes/Todo).
+            </div>
+
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Fecha</th>
+                  <th>Día</th>
+                  <th>Score</th>
+                  <th>100 bots (best)</th>
+                  <th>Hard total</th>
+                  <th>K/D</th>
+                </tr>
+              </thead>
+              <tbody id="leaderboardBody"></tbody>
+            </table>
+          </div>
+
         </div>
       </div>
     </div>
@@ -896,7 +915,6 @@
   // Tracker logic
   // -------------------------------
   const KEY = "valorant_routine_tracker_v5_nats";
-
   const el = (id) => document.getElementById(id);
 
   const DOW_SHORT = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
@@ -930,6 +948,7 @@
     return DOW_SHORT[d.getDay()];
   }
 
+  // --- Bots 100 (5 tiempos)
   function botTimesVals(item){
     const arr = Array.isArray(item.botTimes) ? item.botTimes : [];
     return arr.map(n=>Number(n)).filter(n => Number.isFinite(n) && n > 0);
@@ -943,6 +962,7 @@
     return vals.length ? Math.min(...vals) : 0;
   }
 
+  // --- Hard 15 reps
   function hardVals(item){
     const arr = Array.isArray(item.hardReps) ? item.hardReps : [];
     return arr.map(n=>Number(n)).filter(n => Number.isFinite(n) && n >= 0);
@@ -961,6 +981,7 @@
     return vals.length ? Math.max(...vals) : 0;
   }
 
+  // --- Deathmatch 5
   function dmPairs(item){
     const arr = Array.isArray(item.dms) ? item.dms : [];
     return arr.map(x => ({ k: Number(x?.k)||0, d: Number(x?.d)||0 }));
@@ -976,13 +997,15 @@
     return kd(t.k, t.d);
   }
 
+  // Score compuesto
   function perfScore(item){
     return (hardTotal(item)) + (dmKDTotal(item) * 10) - (botAvg(item) / 10);
   }
 
+  // ISO week key
   function isoWeekKey(dateStr){
     const d = new Date(dateStr + "T00:00:00");
-    const day = (d.getDay() + 6) % 7;
+    const day = (d.getDay() + 6) % 7; // Mon=0..Sun=6
     d.setDate(d.getDate() - day + 3);
     const firstThursday = new Date(d.getFullYear(), 0, 4);
     const firstDay = (firstThursday.getDay() + 6) % 7;
@@ -1053,6 +1076,7 @@
     }
   }
 
+  // ------- NEW PB: 100 bots best (menor)
   function globalBestBotBest(items){
     const vals = items.map(x => botBest(x)).filter(v => v > 0);
     return vals.length ? Math.min(...vals) : 0;
@@ -1073,6 +1097,7 @@
     setTimeout(()=>{ t.style.display = "none"; }, 4500);
   }
 
+  // ------- Consistencia: racha de días
   function computeStreak(allItems){
     const dates = Array.from(new Set(allItems.map(x => x.date).filter(Boolean))).sort();
     if (!dates.length) return {streak:0, last:null};
@@ -1094,6 +1119,7 @@
     return {streak, last};
   }
 
+  // ------- Semana: datos para gráfica + comparación
   function weeklyBotAvgSeries(allItems){
     const map = new Map();
     for (const it of allItems){
@@ -1106,7 +1132,7 @@
       cur.count += 1;
       map.set(wk, cur);
     }
-    const keys = Array.from(map.keys()).sort();
+    const keys = Array.from(map.keys()).sort(); // asc
     return keys.map(k => ({ week:k, avg: map.get(k).sum / map.get(k).count }));
   }
 
@@ -1116,7 +1142,6 @@
     const W = c.width, H = c.height;
 
     ctx.clearRect(0,0,W,H);
-
     ctx.fillStyle = "rgba(255,255,255,0.02)";
     ctx.fillRect(0,0,W,H);
 
@@ -1211,6 +1236,35 @@
     el("streakBar").style.width = pct + "%";
   }
 
+  // ✅ LEADERBOARD
+  function renderLeaderboard(filteredItems){
+    const body = el("leaderboardBody");
+    body.innerHTML = "";
+
+    if (!filteredItems.length) return;
+
+    const sorted = [...filteredItems]
+      .sort((a,b)=> perfScore(b) - perfScore(a))
+      .slice(0, 10);
+
+    sorted.forEach((x, i) => {
+      const score = perfScore(x);
+      const medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i+1}`;
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${medal}</td>
+        <td>${x.date || ""}</td>
+        <td>${x.date ? dowName(x.date) : ""}</td>
+        <td>${fmt(score,1)}</td>
+        <td>${botBest(x) ? (fmt(botBest(x),1) + "s") : "—"}</td>
+        <td>${fmt(hardTotal(x),0)}</td>
+        <td>${fmt(dmKDTotal(x),2)}</td>
+      `;
+      body.appendChild(tr);
+    });
+  }
+
   function render(){
     const mode = el("viewMode").value;
     const period = el("periodSelect").value || (mode === "all" ? "all" : "");
@@ -1247,6 +1301,9 @@
     drawWeekChart(series);
     renderVsLastWeek(allItems);
     renderStreak(allItems);
+
+    // ✅ leaderboard se basa en el filtro actual (semana/mes/todo)
+    renderLeaderboard(items);
 
     const tbody = el("tbody");
     tbody.innerHTML = "";
@@ -1297,8 +1354,8 @@
 
     const dms = [];
     for (let i=1;i<=5;i++){
-      const k = Math.max(0, Math.floor(safeNum(el(\`dm\${i}k\`).value)));
-      const d = Math.max(0, Math.floor(safeNum(el(\`dm\${i}d\`).value)));
+      const k = Math.max(0, Math.floor(safeNum(el(`dm${i}k`).value)));
+      const d = Math.max(0, Math.floor(safeNum(el(`dm${i}d`).value)));
       dms.push({k,d});
     }
 
@@ -1326,14 +1383,14 @@
     save(itemsBefore);
 
     if (item.pbBotBest){
-      showPBToast(\`100 bots best: \${fmt(newBest,1)}s (antes \${prevGlobalBest ? fmt(prevGlobalBest,1)+"s" : "—"})\`);
+      showPBToast(`100 bots best: ${fmt(newBest,1)}s (antes ${prevGlobalBest ? fmt(prevGlobalBest,1)+"s" : "—"})`);
     } else {
       showPBToast("");
     }
 
     for (let i=1;i<=5;i++){ el("botT"+i).value = ""; }
     for (let i=1;i<=15;i++){ el("h"+i).value = ""; }
-    for (let i=1;i<=5;i++){ el(\`dm\${i}k\`).value = ""; el(\`dm\${i}d\`).value = ""; }
+    for (let i=1;i<=5;i++){ el(`dm${i}k`).value = ""; el(`dm${i}d`).value = ""; }
     el("notes").value = "";
 
     renderPeriodSelect();
@@ -1390,8 +1447,8 @@
     });
 
     const csv = [header, ...rows]
-      .map(r => r.map(v => \`"\${String(v)}"\`).join(","))
-      .join("\\n");
+      .map(r => r.map(v => `"${String(v)}"`).join(","))
+      .join("\n");
 
     const blob = new Blob([csv], {type:"text/csv;charset=utf-8"});
     const url = URL.createObjectURL(blob);
@@ -1452,12 +1509,10 @@
     render();
   });
 
-  // click outside closes
   document.addEventListener("click", (e) => {
     if (!settingsWrap.contains(e.target)) toggleMenu(false);
   });
 
-  // ESC closes
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") toggleMenu(false);
   });
